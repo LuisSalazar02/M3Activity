@@ -7,6 +7,7 @@ class CityModel(mesa.Model):
         super().__init__(seed=seed)
         self.width = 24
         self.height = 24
+        # !!!Cambiar!!!
         self.structure_arr = [
             (2,2), (3,2), (4,2), (5,2), (6,2), (7,2), (8,2), (10,2), (11,2), (16,2), (17,2), (20,2), (21,2),
             (3,3), (4,3), (5,3), (6,3), (7,3), (8,3), (9,3), (10,3), (11,3), (16,3), (20,3), (21,3),
@@ -25,19 +26,7 @@ class CityModel(mesa.Model):
             (2,20), (3,20), (4,20), (9,20), (10,20), (11,20), (16,20), (17,20), (18,20), (20,20), (21,20),
             (2,21), (3,21), (4,21), (5,21), (8,21), (9,21), (10,21), (11,21), (16,21), (17,21), (18,21), (19,21), (20,21), (21,21)
         ]
-        self.parking_spot_dict = {
-            1:[(9,2), (2,3), (11,4), (6,5)],
-            2:[(4,10)],
-            3:[(8,8), (11,10)],
-            4:[(2,17), (5,20)],
-            5:[(8,20)],
-            6:[(17,3)],
-            7:[(20,4)],
-            8:[(16,10)],
-            9:[(21,9)],
-            10:[(17,17), (19,17)],
-            11:[(19,20)]
-        }
+        # !!!Cambiar!!!
         self.semaphore_arr = [
             [[(17,0), (17,1)], False],
             [[(2,6), (2,7)], False],
@@ -50,6 +39,7 @@ class CityModel(mesa.Model):
             [[(19,2), (18,2)], True],
             [[(23,5), (22,5)], True]
         ]
+        # !!!Cambiar!!!
         self.directions_dict = {
             ((0,0), (1,23)): "left",
             ((0,0), (23,1)): "down",
@@ -77,9 +67,8 @@ class CityModel(mesa.Model):
         }
         self.global_steps = 0
         self.structure_layer = mesa.space.PropertyLayer("structure", self.width, self.height, np.float64(0))
-        self.parking_spot_layer = mesa.space.PropertyLayer("parking_spot", self.width, self.height, np.float64(0))
         self.semaphore_layer = mesa.space.PropertyLayer("semaphore", self.width, self.height, np.float64(0))
-        self.grid = mesa.space.MultiGrid(self.width, self.height, False, (self.structure_layer, self.parking_spot_layer, self.semaphore_layer))
+        self.grid = mesa.space.MultiGrid(self.width, self.height, False, (self.structure_layer, self.semaphore_layer))
         self.running = True
         self.datacollector = mesa.DataCollector()
 
@@ -96,17 +85,12 @@ class CityModel(mesa.Model):
         for values in self.semaphore_arr:
             SemaphoreAgent(self, values[0], values[1])
 
-        '''
         all_parking_spots = [coord for spots in self.parking_spot_dict.values() for coord in spots]
         for _ in range(car_count):
             random_num = self.random.randrange(len(all_parking_spots))
             a = CarAgent(self)
             self.grid.place_agent(a, all_parking_spots[random_num])
             all_parking_spots.pop(random_num)
-        '''
-
-        a = CarAgent(self)
-        self.grid.place_agent(a, (17,3))
 
     def step(self):
         self.datacollector.collect(self)

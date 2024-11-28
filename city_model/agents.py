@@ -105,7 +105,6 @@ class SemaphoreAgent(mesa.Agent):
     def toggle_state(self):
         if (self.moving != None):
             if(self.moving["green_counter"] > 10):
-                print("passed")
                 self.moving["green_counter"] = 0
                 if (self.moving == self.pairs[0]):
                     if (self.pairs[1]["car_counter"] > 0):

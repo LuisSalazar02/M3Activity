@@ -73,79 +73,75 @@ class CarAgent(mesa.Agent):
                     self.notified = True
                     if (area_data[1] % 2 == 0):
                         if (semaphores[group].moving == None):
-                            print("Hello")
-                            semaphores[group].moving = semaphores[group].neighbor1
-                            semaphores[group].moving["car_counter"] += 1
+                            semaphores[group].moving = semaphores[group].pairs[0]
+                            semaphores[group].pairs[area_data[1] % 2]["car_counter"] += 1
                             for i in range(2):
-                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].neighbor1["coordinates"][i], 1)
-                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].neighbor2["coordinates"][i], 2)
+                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].pairs[0]["coordinates"][i], 1)
+                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].pairs[1]["coordinates"][i], 2)
                         else:
-                            semaphores.moving["car_counter"] += 1
+                            semaphores[group].pairs[area_data[1] % 2]["car_counter"] += 1
                     elif (area_data[1] % 2 == 1):
                         if (semaphores[group].moving == None):
-                            semaphores[group].moving = semaphores[group].neighbor2
-                            semaphores[group].moving["car_counter"] += 1
+                            semaphores[group].moving = semaphores[group].pairs[1]
+                            semaphores[group].pairs[area_data[1] % 2]["car_counter"] += 1
                             for i in range(2):
-                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].neighbor1["coordinates"][i], 2)
-                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].neighbor2["coordinates"][i], 1)
+                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].pairs[0]["coordinates"][i], 2)
+                                self.model.grid.properties["semaphore"].set_cell(semaphores[group].pairs[1]["coordinates"][i], 1)
                         else:
-                            semaphores.moving["car_counter"] += 1
+                            semaphores[group].pairs[area_data[1] % 2]["car_counter"] += 1
             elif (area_data[0] == False and self.notified == True):
-                print("sali")
                 self.notified = False
-                print("next")
-                semaphores[prev_area_data[1] // 2].moving["car_counter"] -= 1
-                print("final")
+                semaphores[prev_area_data[1] // 2].pairs[prev_area_data[1] % 2]["car_counter"] -= 1
 
 class SemaphoreAgent(mesa.Agent):
-    def __init__(self, model, neighbor1, neighbor2):
+    def __init__(self, model, pairs):
         super().__init__(model)
-        self.neighbor1 = neighbor1
-        self.neighbor2 = neighbor2
+        self.pairs = pairs
         self.moving = None
         for i in range(2):
-            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 3)
-            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 3)
+            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 3)
+            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 3)
 
     def toggle_state(self):
-        if (self.moving):
+        if (self.moving != None):
             if(self.moving["green_counter"] > 10):
+                print("passed")
                 self.moving["green_counter"] = 0
-                if (self.moving == self.neighbor1):
-                    if (self.neighbor2["car_counter"] > 0):
+                if (self.moving == self.pairs[0]):
+                    if (self.pairs[1]["car_counter"] > 0):
                         for i in range(2):
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 2)
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 1)
-                        self.moving = self.neighbor2
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 2)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 1)
+                        self.moving = self.pairs[1]
                 else:
-                    if (self.neighbor1["car_counter"] > 0):
+                    if (self.pairs[0]["car_counter"] > 0):
                         for i in range(2):
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 1)
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 2)
-                        self.moving = self.neighbor1
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 1)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 2)
+                        self.moving = self.pairs[0]
             elif(self.moving["car_counter"] == 0):
                 self.moving["green_counter"] = 0
-                if (self.moving == self.neighbor1):
-                    if (self.neighbor2["car_counter"] > 0):
+                if (self.moving == self.pairs[0]):
+                    if (self.pairs[1]["car_counter"] > 0):
                         for i in range(2):
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 2)
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 1)
-                        self.moving = self.neighbor2
-                    elif (self.neighbor2["car_counter"] == 0):
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 2)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 1)
+                        self.moving = self.pairs[1]
+                    elif (self.pairs[1]["car_counter"] == 0):
                         for i in range(2):
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 3)
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 3)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 3)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 3)
                         self.moving = None
                 else:
-                    if (self.neighbor1["car_counter"] > 0):
+                    if (self.pairs[0]["car_counter"] > 0):
                         for i in range(2):
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 1)
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 2)
-                        self.moving = self.neighbor1
-                    elif (self.neighbor1["car_counter"] == 0):
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 1)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 2)
+                        self.moving = self.pairs[0]
+                    elif (self.pairs[0]["car_counter"] == 0):
                         for i in range(2):
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor1["coordinates"][i], 3)
-                            self.model.grid.properties["semaphore"].set_cell(self.neighbor2["coordinates"][i], 3)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[0]["coordinates"][i], 3)
+                            self.model.grid.properties["semaphore"].set_cell(self.pairs[1]["coordinates"][i], 3)
                         self.moving = None
             else:
                 self.moving["green_counter"] += 1
